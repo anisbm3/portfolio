@@ -1,9 +1,9 @@
 "use client";
 
-import React, { Suspense, useState, useEffect, useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Text, useTexture } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import Image from "next/image";
+import { Suspense, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 // Artwork data

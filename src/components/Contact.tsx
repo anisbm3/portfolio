@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { Linkedin, Github, Mail, MapPin, Phone, User } from "lucide-react";
+import { Github, Linkedin, Mail, MapPin, Phone, User } from "lucide-react";
 
 export default function Contact() {
   return (

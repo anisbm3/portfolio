@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
-import dynamic from "next/dynamic";
 import About from "@/components/About";
-import Skills from "@/components/Skills";
 import Certifications from "@/components/Certifications";
-import Experience from "@/components/Experience";
-import Social from "@/components/Social";
 import Contact from "@/components/Contact";
+import Experience from "@/components/Experience";
+import GalleryLaunch from "@/components/GalleryLaunch";
+import Skills from "@/components/Skills";
+import Social from "@/components/Social";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import GalleryLaunch from "@/components/GalleryLaunch";
+import dynamic from "next/dynamic";
+import { useState } from "react";
 
 // Dynamic import for Gallery3D to avoid SSR issues with Three.js
 const Gallery3D = dynamic(() => import("@/components/Gallery3D"), {

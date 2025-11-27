@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Briefcase, Code, FolderOpen, Info, Mail, Users, Menu, X } from "lucide-react";
+import { Briefcase, Code, FolderOpen, Info, Mail, Menu, Users, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { href: "#about", label: "About", icon: Info },

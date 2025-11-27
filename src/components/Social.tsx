@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { X, Calendar, MapPin, Users, Heart, Award, Sparkles } from "lucide-react";
+import { Award, Calendar, Heart, MapPin, Sparkles, Users, X } from "lucide-react";
 import Image from "next/image";
+import React, { useState } from "react";
 
 interface SocialExperience {
   id: number;
