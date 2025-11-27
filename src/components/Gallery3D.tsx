@@ -383,17 +383,19 @@ function Visitor() {
   );
 }
 
-// First person keyboard + mouse controls for walking
-function FirstPersonControls() {
+// First person keyboard + mouse + touch controls for walking
+function FirstPersonControls({ keys }: { keys: React.MutableRefObject<{ [key: string]: boolean }> }) {
   const { camera, gl } = useThree();
   const moveSpeed = 0.08;
   const rotateSpeed = 0.03;
   const mouseSensitivity = 0.002;
-  const keys = useRef<{ [key: string]: boolean }>({});
+  const touchSensitivity = 0.005; // Higher sensitivity for touch
 
   const euler = useRef(new THREE.Euler(0, 0, 0, "YXZ"));
   const isDragging = useRef(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
+  const lastTouchPos = useRef({ x: 0, y: 0 });
+  const isTouching = useRef(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -432,11 +434,45 @@ function FirstPersonControls() {
       camera.quaternion.setFromEuler(euler.current);
     };
 
+    // Touch events for mobile look around
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) { // Single touch
+        isTouching.current = true;
+        lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isTouching.current || e.touches.length !== 1) return;
+      e.preventDefault(); // Prevent scrolling
+
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - lastTouchPos.current.x;
+      const deltaY = touch.clientY - lastTouchPos.current.y;
+      lastTouchPos.current = { x: touch.clientX, y: touch.clientY };
+
+      euler.current.setFromQuaternion(camera.quaternion);
+      euler.current.y -= deltaX * touchSensitivity;
+      euler.current.x -= deltaY * touchSensitivity;
+      
+      // Clamp vertical look angle
+      euler.current.x = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, euler.current.x));
+      
+      camera.quaternion.setFromEuler(euler.current);
+    };
+
+    const handleTouchEnd = () => {
+      isTouching.current = false;
+    };
+
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     gl.domElement.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mouseup", handleMouseUp);
     window.addEventListener("mousemove", handleMouseMove);
+    gl.domElement.addEventListener("touchstart", handleTouchStart, { passive: false });
+    gl.domElement.addEventListener("touchmove", handleTouchMove, { passive: false });
+    gl.domElement.addEventListener("touchend", handleTouchEnd);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
@@ -444,6 +480,9 @@ function FirstPersonControls() {
       gl.domElement.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mouseup", handleMouseUp);
       window.removeEventListener("mousemove", handleMouseMove);
+      gl.domElement.removeEventListener("touchstart", handleTouchStart);
+      gl.domElement.removeEventListener("touchmove", handleTouchMove);
+      gl.domElement.removeEventListener("touchend", handleTouchEnd);
     };
   }, [camera, gl]);
 
@@ -492,9 +531,11 @@ function FirstPersonControls() {
 function GalleryScene({
   onArtworkClick,
   onDoorClick,
+  keys,
 }: {
   onArtworkClick: (artwork: ArtworkType) => void;
   onDoorClick: () => void;
+  keys: React.MutableRefObject<{ [key: string]: boolean }>;
 }) {
   return (
     <>
@@ -542,7 +583,7 @@ function GalleryScene({
 
       <Door onClick={onDoorClick} />
 
-      <FirstPersonControls />
+      <FirstPersonControls keys={keys} />
     </>
   );
 }
@@ -613,17 +654,111 @@ export default function Gallery3D({ onExit }: Props) {
   const [selectedArtwork, setSelectedArtwork] = useState<ArtworkType | null>(
     null
   );
+  const [isMobile, setIsMobile] = useState(false);
+  const keys = useRef<{ [key: string]: boolean }>({});
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart.current) return;
+    const touchEnd = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    const deltaX = touchEnd.x - touchStart.current.x;
+    const deltaY = touchEnd.y - touchStart.current.y;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Horizontal swipe
+      if (Math.abs(deltaX) > minSwipeDistance) {
+        if (deltaX > 0) {
+          // Swipe right - strafe right
+          keys.current['KeyD'] = true;
+          setTimeout(() => keys.current['KeyD'] = false, 200);
+        } else {
+          // Swipe left - strafe left
+          keys.current['KeyA'] = true;
+          setTimeout(() => keys.current['KeyA'] = false, 200);
+        }
+      }
+    } else {
+      // Vertical swipe
+      if (Math.abs(deltaY) > minSwipeDistance) {
+        if (deltaY > 0) {
+          // Swipe down - move backward
+          keys.current['KeyS'] = true;
+          setTimeout(() => keys.current['KeyS'] = false, 200);
+        } else {
+          // Swipe up - move forward
+          keys.current['KeyW'] = true;
+          setTimeout(() => keys.current['KeyW'] = false, 200);
+        }
+      }
+    }
+    touchStart.current = null;
+  };
 
   return (
-    <div className="fixed inset-0 z-40 bg-black">
+    <div 
+      className="fixed inset-0 z-40 bg-black"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <Canvas camera={{ position: [0, 2, 6], fov: 60 }}>
         <Suspense fallback={null}>
           <GalleryScene
             onArtworkClick={setSelectedArtwork}
             onDoorClick={onExit}
+            keys={keys}
           />
         </Suspense>
       </Canvas>
+
+      {/* Mobile movement controls */}
+      {isMobile && (
+        <div className="absolute bottom-20 right-4 flex flex-col gap-2">
+          <button
+            className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white text-xl font-bold"
+            onTouchStart={() => keys.current['KeyW'] = true}
+            onTouchEnd={() => keys.current['KeyW'] = false}
+          >
+            ↑
+          </button>
+          <div className="flex gap-2">
+            <button
+              className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white text-xl font-bold"
+              onTouchStart={() => keys.current['KeyA'] = true}
+              onTouchEnd={() => keys.current['KeyA'] = false}
+            >
+              ←
+            </button>
+            <button
+              className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white text-xl font-bold"
+              onTouchStart={() => keys.current['KeyS'] = true}
+              onTouchEnd={() => keys.current['KeyS'] = false}
+            >
+              ↓
+            </button>
+            <button
+              className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white text-xl font-bold"
+              onTouchStart={() => keys.current['KeyD'] = true}
+              onTouchEnd={() => keys.current['KeyD'] = false}
+            >
+              →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Instructions overlay */}
       <div className="absolute bottom-4 left-4 text-white/70 text-sm pointer-events-none bg-black/40 p-3 rounded-lg">
@@ -632,6 +767,13 @@ export default function Gallery3D({ onExit }: Props) {
         <p>⬅️➡️: Turn left/right • A/D: Strafe</p>
         <p>🖼️ Click artwork to view details</p>
         <p>🚪 Click EXIT door to leave</p>
+        {isMobile && (
+          <>
+            <p>👆 Swipe up/down to move forward/back</p>
+            <p>👈👉 Swipe left/right to strafe</p>
+            <p>👆 Drag to look around</p>
+          </>
+        )}
       </div>
 
       {selectedArtwork && (

@@ -152,8 +152,13 @@ export default function Social() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#222831]/80 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity duration-500" />
                   
+                  {/* Step Number Badge */}
+                  <div className="absolute top-4 left-4 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg border-2 border-[#00ADB5] z-10">
+                    <span className="text-[#222831] font-bold text-sm md:text-lg">{experience.id}</span>
+                  </div>
+                  
                   {/* Enhanced Category Badge */}
-                  <div className="absolute top-4 right-4 transform group-hover:scale-110 transition-transform duration-300">
+                  <div className="absolute top-4 right-4 transform group-hover:scale-110 transition-transform duration-300 z-10">
                     <span className={`px-4 py-2 rounded-full text-xs font-bold text-white bg-gradient-to-r ${experience.gradient} shadow-xl backdrop-blur-sm border border-white/20`}>
                       {experience.category}
                     </span>
