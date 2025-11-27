@@ -596,14 +596,14 @@ function ArtworkDetail({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div className="bg-[#1a1a2e] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-[#00ADB5]/30">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 md:p-4">
+      <div className="bg-[#1a1a2e] rounded-xl md:rounded-2xl max-w-4xl w-full max-h-[80vh] md:max-h-[90vh] overflow-hidden shadow-2xl border border-[#00ADB5]/30">
         <div className="grid md:grid-cols-2 h-full">
           {/* Images scroller */}
-          <div className="relative h-64 md:h-auto overflow-x-auto">
-            <div className="flex gap-4 h-full min-w-max">
+          <div className="relative h-32 md:h-64 lg:h-auto overflow-x-auto">
+            <div className="flex gap-2 md:gap-4 h-full min-w-max">
               {artwork.images.map((image, index) => (
-                <div key={index} className="relative w-80 h-full flex-shrink-0">
+                <div key={index} className="relative w-48 md:w-80 h-full flex-shrink-0">
                   <Image
                     src={image}
                     alt={`${artwork.title} - Image ${index + 1}`}
@@ -615,21 +615,21 @@ function ArtworkDetail({
             </div>
           </div>
           {/* Info side */}
-          <div className="p-6 flex flex-col justify-between">
+          <div className="p-3 md:p-6 flex flex-col justify-between overflow-y-auto max-h-[45vh] md:max-h-none">
             <div>
-              <h2 className="text-3xl font-bold text-white mb-4">
+              <h2 className="text-lg md:text-3xl font-bold text-white mb-2 md:mb-4">
                 {artwork.title}
               </h2>
-              <p className="text-gray-300 text-lg mb-6">{artwork.description}</p>
+              <p className="text-gray-300 text-sm md:text-lg mb-3 md:mb-6 line-clamp-3 md:line-clamp-none">{artwork.description}</p>
               <div>
-                <h3 className="text-[#00ADB5] font-semibold mb-2">
+                <h3 className="text-[#00ADB5] font-semibold mb-1 md:mb-2 text-sm md:text-base">
                   Technologies
                 </h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1 md:gap-2">
                   {artwork.technologies.map((tech) => (
                     <span
                       key={tech}
-                      className="px-3 py-1 bg-[#00ADB5]/20 text-[#00ADB5] rounded-full text-sm border border-[#00ADB5]/40"
+                      className="px-2 md:px-3 py-0.5 md:py-1 bg-[#00ADB5]/20 text-[#00ADB5] rounded-full text-xs md:text-sm border border-[#00ADB5]/40"
                     >
                       {tech}
                     </span>
@@ -639,7 +639,7 @@ function ArtworkDetail({
             </div>
             <button
               onClick={onClose}
-              className="mt-6 w-full py-3 bg-[#00ADB5] hover:bg-[#00ADB5]/80 text-white font-semibold rounded-lg transition-colors"
+              className="mt-3 md:mt-6 w-full py-2 md:py-3 bg-[#00ADB5] hover:bg-[#00ADB5]/80 text-white font-semibold rounded-lg transition-colors text-sm md:text-base"
             >
               Close
             </button>
